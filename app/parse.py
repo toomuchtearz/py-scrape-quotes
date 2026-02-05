@@ -32,9 +32,7 @@ def parse_quote(quote: Tag) -> Quote:
     )
 
 
-def get_quotes_from_one_page(url: str) -> list[Quote]:
-    text = get(url=url).content
-    soup = BeautifulSoup(text, "html.parser")
+def get_quotes_from_one_page(soup: BeautifulSoup) -> list[Quote]:
     quotes = soup.select(selector=".quote")
     return [
         parse_quote(quote)
@@ -42,16 +40,20 @@ def get_quotes_from_one_page(url: str) -> list[Quote]:
     ]
 
 
+def get_soup(url: str) -> BeautifulSoup:
+    response = get(url)
+    return BeautifulSoup(response.content, "html.parser")
+
+
 def scrape_all_quotes(start_url: str) -> list[Quote]:
     current_url = start_url
     result_list = []
 
     while current_url:
-        response = get(current_url)
-        soup = BeautifulSoup(response.content, "html.parser")
+        soup = get_soup(url=current_url)
 
         result_list.extend(
-            get_quotes_from_one_page(url=current_url)
+            get_quotes_from_one_page(soup=soup)
         )
 
         next_btn = soup.select_one("li.next a")
